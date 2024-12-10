@@ -7,6 +7,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/LMAHealthComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/Engine.h"
 
 ALMADefaultCharacter::ALMADefaultCharacter()
 {
@@ -25,6 +28,8 @@ ALMADefaultCharacter::ALMADefaultCharacter()
 	CameraComponent->SetFieldOfView(FOV);
 	CameraComponent->bUsePawnControlRotation = false;
 
+	HealthComponent = CreateDefaultSubobject<ULMAHealthComponent>("HealthComponent");
+
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
@@ -38,12 +43,96 @@ void ALMADefaultCharacter::BeginPlay()
 	{
 		CurrentCursor = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), CursorMaterial, CursorSize, FVector(0));
 	}
+
+	OnHealthChanged(HealthComponent->GetHealth());
+	HealthComponent->OnDeath.AddUObject(this, &ALMADefaultCharacter::OnDeath);
+	HealthComponent->OnHealthChanged.AddUObject(this, &ALMADefaultCharacter::OnHealthChanged);
+
+	// Saving default max speed
+	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
 
 void ALMADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!(HealthComponent->IsDead()))
+	{
+		RotationPlayerOnCursor();
+		// ----------------------- Sprint -----------------------
+		if (bIsSprinting)
+		{
+			Stamina -= SprintStaminaCost * DeltaTime;
+			if (Stamina <= 0)
+			{
+				StopSprinting();
+			}
+		}
+		else
+		{
+			Stamina = FMath::Min(Stamina + StaminaRecoveryRate * DeltaTime, MaxStamina);
+		}
+		// ----------------------- Sprint -----------------------
+	}
+}
+
+void ALMADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &ALMADefaultCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ALMADefaultCharacter::MoveRight);
+
+	PlayerInputComponent->BindAxis("Zoom", this, &ALMADefaultCharacter::ZoomCamera);
+
+	// ----------------------- Sprint -----------------------
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ALMADefaultCharacter::StartSprinting);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ALMADefaultCharacter::StopSprinting);
+	// ----------------------- Sprint -----------------------
+}
+
+void ALMADefaultCharacter::MoveForward(float Value)
+{
+	AddMovementInput(GetActorForwardVector(), Value);
+}
+void ALMADefaultCharacter::MoveRight(float Value)
+{
+	AddMovementInput(GetActorRightVector(), Value);
+}
+
+void ALMADefaultCharacter::OnDeath()
+{
+	CurrentCursor->DestroyRenderState_Concurrent();
+
+	PlayAnimMontage(DeathMontage);
+
+	GetCharacterMovement()->DisableMovement();
+
+	SetLifeSpan(5.0f);
+
+	if (Controller)
+	{
+		Controller->ChangeState(NAME_Spectating);
+	}
+}
+
+void ALMADefaultCharacter::ZoomCamera(float AxisValue)
+{
+	if (SpringArmComponent)
+	{
+		float NewArmLength = SpringArmComponent->TargetArmLength + AxisValue * ZoomSpeed;
+		NewArmLength = FMath::Clamp(NewArmLength, MinArmLength, MaxArmLength);
+		SpringArmComponent->TargetArmLength = NewArmLength;
+	}
+}
+
+void ALMADefaultCharacter::OnHealthChanged(float NewHealth)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Health = %f"), NewHealth));
+}
+
+void ALMADefaultCharacter::RotationPlayerOnCursor()
+{
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PC)
 	{
@@ -58,34 +147,19 @@ void ALMADefaultCharacter::Tick(float DeltaTime)
 	}
 }
 
-void ALMADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+// ----------------------- Sprint -----------------------
+void ALMADefaultCharacter::StartSprinting()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &ALMADefaultCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ALMADefaultCharacter::MoveRight);
-
-	PlayerInputComponent->BindAxis("Zoom", this, &ALMADefaultCharacter::ZoomCamera);
-}
-
-void ALMADefaultCharacter::MoveForward(float Value)
-{
-	AddMovementInput(GetActorForwardVector(), Value);
-}
-void ALMADefaultCharacter::MoveRight(float Value)
-{
-	AddMovementInput(GetActorRightVector(), Value);
-}
-
-// ќбработка метода зума камеры
-void ALMADefaultCharacter::ZoomCamera(float AxisValue)
-{
-	if (SpringArmComponent)
+	if (Stamina > 0)
 	{
-		// »змен€ем длину рычага в зависимости от направлени€ скролла
-		float NewArmLength = SpringArmComponent->TargetArmLength + AxisValue * ZoomSpeed;
-		// ќграничиваем длину выхода за пределы диапазона
-		NewArmLength = FMath::Clamp(NewArmLength, MinArmLength, MaxArmLength);
-		SpringArmComponent->TargetArmLength = NewArmLength;
+		bIsSprinting = true;
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 	}
 }
+
+void ALMADefaultCharacter::StopSprinting()
+{
+	bIsSprinting = false;
+	GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+}
+// ----------------------- Sprint -----------------------

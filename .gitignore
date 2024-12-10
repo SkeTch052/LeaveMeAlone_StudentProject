@@ -4,4 +4,6 @@ Binaries/
 DerivedDataCache/
 Intermediate/
 Saved/
-Content/StarterConter/Audio/
+Content/StarterContent/Audio/
+Content/StarterContent/HDRI/
+Content/StarterContent/Textures/

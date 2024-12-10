@@ -8,6 +8,8 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class ULMAHealthComponent;
+class UAnimMontage;
 
 UCLASS()
 class LEAVEMEALONE_API ALMADefaultCharacter : public ACharacter
@@ -17,12 +19,18 @@ class LEAVEMEALONE_API ALMADefaultCharacter : public ACharacter
 public:
 	ALMADefaultCharacter();
 
+	UFUNCTION()
+	ULMAHealthComponent* GetHealthComponent() const { return HealthComponent; }
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	USpringArmComponent* SpringArmComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UCameraComponent* CameraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components|Health")
+	ULMAHealthComponent* HealthComponent;
 
 	UPROPERTY()
 	UDecalComponent* CurrentCursor = nullptr;
@@ -33,15 +41,34 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cursor")
 	FVector CursorSize = FVector(20.0f, 40.0f, 40.0f);
 
-	// Переменные для работы зума камеры
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float MinArmLength = 300.0f;
+	float MinArmLength = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float MaxArmLength = 1800.0f;
+	float MaxArmLength = 2000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	float ZoomSpeed = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* DeathMontage;
+
+	// ----------------------- Sprint -----------------------
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sprint", meta = (AllowPrivateAccess = "true"))
+	float SprintSpeed = 700.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sprint", meta = (AllowPrivateAccess = "true"))
+	float Stamina = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sprint", meta = (AllowPrivateAccess = "true"))
+	float MaxStamina = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sprint", meta = (AllowPrivateAccess = "true"))
+	float SprintStaminaCost = 25.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sprint", meta = (AllowPrivateAccess = "true"))
+	float StaminaRecoveryRate = 35.0f;
+	// ----------------------- Sprint -----------------------
 
 	virtual void BeginPlay() override;
 
@@ -59,6 +86,19 @@ private:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
-	// Метод зума камеры
+	void OnDeath();
+	void OnHealthChanged(float NewHealth);
+
+	// ----------------------- Sprint -----------------------
+	bool bIsSprinting = false;
+
+	float DefaultWalkSpeed;
+
+	void StartSprinting();
+	void StopSprinting();
+	// ----------------------- Sprint -----------------------
+
+	void RotationPlayerOnCursor();
+
 	void ZoomCamera(float AxisValue);
 };
