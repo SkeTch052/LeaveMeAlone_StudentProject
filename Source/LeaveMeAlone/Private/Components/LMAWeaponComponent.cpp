@@ -1,21 +1,21 @@
 // LeaveMeAlone Game by Netologiya. All RightsReserved.
 
-
 #include "Components/LMAWeaponComponent.h"
 #include "Player/LMADefaultCharacter.h"
 #include "Weapon/LMABaseWeapon.h"
 #include "Animations/LMAReloadFinishedAnimNotify.h"
 #include "GameFramework/Character.h"
+#include "TimerManager.h"
 
 ULMAWeaponComponent::ULMAWeaponComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
-
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
+//-----HOMEWORK: Shooting in Full Auto Mode
 void ULMAWeaponComponent::Fire()
 {
-	if (Weapon && !AnimReloading)
+	if (Weapon && !AnimReloading && !GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
 	{
 		Weapon->Fire();
 	}
@@ -34,6 +34,8 @@ void ULMAWeaponComponent::SpawnWeapon()
 	Weapon = GetWorld()->SpawnActor<ALMABaseWeapon>(WeaponClass);
 	if (Weapon)
 	{
+		//-----HOMEWORK: Subscribe to the delegate when the weapon spawns
+		Weapon->OnClipEmpty.AddUObject(this, &ULMAWeaponComponent::OnClipEmpty);
 		const auto Character = Cast<ACharacter>(GetOwner());
 		if (Character)
 		{
@@ -45,7 +47,8 @@ void ULMAWeaponComponent::SpawnWeapon()
 
 void ULMAWeaponComponent::InitAnimNotify()
 {
-	if (!ReloadMontage) return;
+	if (!ReloadMontage)
+		return;
 
 	const auto NotifiesEvents = ReloadMontage->Notifies;
 	for (auto NotifyEvent : NotifiesEvents)
@@ -68,23 +71,39 @@ void ULMAWeaponComponent::OnNotifyReloadFinished(USkeletalMeshComponent* Skeleta
 	}
 }
 
+//-----HOMEWORK: Can't reload with a full clip
 bool ULMAWeaponComponent::CanReload() const
 {
-	return !AnimReloading;
+	return !AnimReloading && !Weapon->GetIsCurrentClipFull();
 }
 
-void ULMAWeaponComponent::Reload()
+//-----HOMEWORK: the new reload function
+void ULMAWeaponComponent::EnhancedReload()
 {
-	if (!CanReload()) return;
+	if (!CanReload())
+		return;
+	//-----HOMEWORK: Can't reload and shooting at the same time
+	StopFire();
 	Weapon->ChangeClip();
 	AnimReloading = true;
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	Character->PlayAnimMontage(ReloadMontage);
 }
 
-void ULMAWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+//-----HOMEWORK: call the new function in Reload()
+void ULMAWeaponComponent::Reload()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	EnhancedReload();
 }
 
+//-----HOMEWORK: when releasing the Fire button
+void ULMAWeaponComponent::StopFire()
+{
+	Weapon->StopFire();
+}
+
+//-----HOMEWORK: call the new function in the delegate callback function
+void ULMAWeaponComponent::OnClipEmpty()
+{
+	EnhancedReload();
+}

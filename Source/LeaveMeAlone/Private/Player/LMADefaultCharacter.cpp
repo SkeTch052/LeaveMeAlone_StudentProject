@@ -51,7 +51,6 @@ void ALMADefaultCharacter::BeginPlay()
 	HealthComponent->OnDeath.AddUObject(this, &ALMADefaultCharacter::OnDeath);
 	HealthComponent->OnHealthChanged.AddUObject(this, &ALMADefaultCharacter::OnHealthChanged);
 
-	// Saving default max speed
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
 
@@ -62,7 +61,6 @@ void ALMADefaultCharacter::Tick(float DeltaTime)
 	if (!(HealthComponent->IsDead()))
 	{
 		RotationPlayerOnCursor();
-		// ----------------------- Sprint -----------------------
 		if (bIsSprinting)
 		{
 			Stamina -= SprintStaminaCost * DeltaTime;
@@ -75,7 +73,6 @@ void ALMADefaultCharacter::Tick(float DeltaTime)
 		{
 			Stamina = FMath::Min(Stamina + StaminaRecoveryRate * DeltaTime, MaxStamina);
 		}
-		// ----------------------- Sprint -----------------------
 	}
 }
 
@@ -88,14 +85,13 @@ void ALMADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 	PlayerInputComponent->BindAxis("Zoom", this, &ALMADefaultCharacter::ZoomCamera);
 
-	// ----------------------- Sprint -----------------------
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ALMADefaultCharacter::StartSprinting);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ALMADefaultCharacter::StopSprinting);
-	// ----------------------- Sprint -----------------------
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, WeaponComponent, &ULMAWeaponComponent::Fire);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, WeaponComponent, &ULMAWeaponComponent::Reload);
-
+	//----HOMEWORK: Improved the Action Mappings - Fire input processing event
+	PlayerInputComponent->BindAction("Fire", IE_Released, WeaponComponent, &ULMAWeaponComponent::StopFire);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, WeaponComponent, &ULMAWeaponComponent::EnhancedReload);
 }
 
 void ALMADefaultCharacter::MoveForward(float Value)
@@ -109,6 +105,9 @@ void ALMADefaultCharacter::MoveRight(float Value)
 
 void ALMADefaultCharacter::OnDeath()
 {
+	//-----HOMEWORK: Can't fire when the char is dead
+	WeaponComponent->StopFire();
+
 	CurrentCursor->DestroyRenderState_Concurrent();
 
 	PlayAnimMontage(DeathMontage);
@@ -154,7 +153,6 @@ void ALMADefaultCharacter::RotationPlayerOnCursor()
 	}
 }
 
-// ----------------------- Sprint -----------------------
 void ALMADefaultCharacter::StartSprinting()
 {
 	if (Stamina > 0)
@@ -169,4 +167,3 @@ void ALMADefaultCharacter::StopSprinting()
 	bIsSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 }
-// ----------------------- Sprint -----------------------

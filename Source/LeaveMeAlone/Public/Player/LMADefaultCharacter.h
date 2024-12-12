@@ -57,7 +57,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* DeathMontage;
 
-	// ----------------------- Sprint -----------------------
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sprint", meta = (AllowPrivateAccess = "true"))
 	float SprintSpeed = 700.0f;
 
@@ -72,7 +71,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sprint", meta = (AllowPrivateAccess = "true"))
 	float StaminaRecoveryRate = 35.0f;
-	// ----------------------- Sprint -----------------------
 
 	virtual void BeginPlay() override;
 
@@ -93,14 +91,12 @@ private:
 	void OnDeath();
 	void OnHealthChanged(float NewHealth);
 
-	// ----------------------- Sprint -----------------------
 	bool bIsSprinting = false;
 
 	float DefaultWalkSpeed;
 
 	void StartSprinting();
 	void StopSprinting();
-	// ----------------------- Sprint -----------------------
 
 	void RotationPlayerOnCursor();
 

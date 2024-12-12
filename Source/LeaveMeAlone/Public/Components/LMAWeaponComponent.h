@@ -9,16 +9,20 @@
 class ALMABaseWeapon;
 class UAnimMontage;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class LEAVEMEALONE_API ULMAWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	ULMAWeaponComponent();
 
 	void Fire();
+	void StopFire();
 	void Reload();
+
+	//-----HOMEWORK: declare the new reload function
+	void EnhancedReload();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
@@ -29,9 +33,6 @@ protected:
 
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
 private:
 	UPROPERTY()
 	ALMABaseWeapon* Weapon = nullptr;
@@ -44,4 +45,9 @@ private:
 	void OnNotifyReloadFinished(USkeletalMeshComponent* SkeletalMesh);
 	bool CanReload() const;
 
+	//-----HOMEWORK: The firing event will now be triggered by a timer
+	FTimerHandle FireTimerHandle;
+
+	//-----HOMEWORK: Declare a callback function that responds to a notification
+	void OnClipEmpty();
 };

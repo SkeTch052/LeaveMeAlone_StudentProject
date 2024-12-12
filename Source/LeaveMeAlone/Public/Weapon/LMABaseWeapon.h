@@ -7,6 +7,8 @@
 #include "LMABaseWeapon.generated.h"
 
 class USkeletalMeshComponent;
+//-----HOMEWORK: Declare the delegate
+DECLARE_MULTICAST_DELEGATE(FOnClipEmpty);
 
 USTRUCT(BlueprintType)
 struct FAmmoWeapon
@@ -27,12 +29,20 @@ UCLASS()
 class LEAVEMEALONE_API ALMABaseWeapon : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	ALMABaseWeapon();
 
 	void Fire();
+	void StopFire();
 	void ChangeClip();
+
+	//-----HOMEWORK: Get the necessary booleans
+	bool GetIsCurrentClipEmpty() { return IsCurrentClipEmpty(); };
+	bool GetIsCurrentClipFull() { return IsCurrentClipFull(); };
+
+	// -----HOMEWORK: Declare the delegate
+	FOnClipEmpty OnClipEmpty;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -44,17 +54,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FAmmoWeapon AmmoWeapon{30, 0, true};
 
+	//-----HOMEWORK: Fire Rate for Full Auto Mode
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	float FireRate = 0.1f;
+
 	virtual void BeginPlay() override;
 
 	void Shoot();
 
 	void DecrementBullets();
 	bool IsCurrentClipEmpty() const;
-
-public:	
-	virtual void Tick(float DeltaTime) override;
+	//-----HOMEWORK: check if the current clip is full
+	bool IsCurrentClipFull() const;
 
 private:
 	FAmmoWeapon CurrentAmmoWeapon;
-
+	//-----HOMEWORK: The firing event will now be triggered by a timer
+	FTimerHandle FireTimerHandle;
 };
