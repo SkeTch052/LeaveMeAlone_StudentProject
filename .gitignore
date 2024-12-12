@@ -4,6 +4,14 @@ Binaries/
 DerivedDataCache/
 Intermediate/
 Saved/
+
 Content/StarterContent/Audio/
 Content/StarterContent/HDRI/
 Content/StarterContent/Textures/
+
+Content/FPS_Weapon_Bundle/Weapons/Materials/*
+Content/FPS_Weapon_Bundle/Weapons/Meshes/*
+Content/FPS_Weapon_Bundle/Weapons/Textures/*
+!Content/FPS_Weapon_Bundle/Weapons/Materials/Ka47/
+!Content/FPS_Weapon_Bundle/Weapons/Meshes/Ka47/
+!Content/FPS_Weapon_Bundle/Weapons/Textures/KA47/
