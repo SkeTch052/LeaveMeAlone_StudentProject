@@ -7,7 +7,7 @@
 #include "LMABaseWeapon.generated.h"
 
 class USkeletalMeshComponent;
-//-----HOMEWORK: Declare the delegate
+
 DECLARE_MULTICAST_DELEGATE(FOnClipEmpty);
 
 USTRUCT(BlueprintType)
@@ -37,11 +37,11 @@ public:
 	void StopFire();
 	void ChangeClip();
 
-	//-----HOMEWORK: Get the necessary booleans
+	FAmmoWeapon GetCurrentAmmoWeapon() const { return CurrentAmmoWeapon; }
+
 	bool GetIsCurrentClipEmpty() { return IsCurrentClipEmpty(); };
 	bool GetIsCurrentClipFull() { return IsCurrentClipFull(); };
 
-	// -----HOMEWORK: Declare the delegate
 	FOnClipEmpty OnClipEmpty;
 
 protected:
@@ -54,7 +54,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FAmmoWeapon AmmoWeapon{30, 0, true};
 
-	//-----HOMEWORK: Fire Rate for Full Auto Mode
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	float FireRate = 0.1f;
 
@@ -64,11 +63,9 @@ protected:
 
 	void DecrementBullets();
 	bool IsCurrentClipEmpty() const;
-	//-----HOMEWORK: check if the current clip is full
 	bool IsCurrentClipFull() const;
 
 private:
 	FAmmoWeapon CurrentAmmoWeapon;
-	//-----HOMEWORK: The firing event will now be triggered by a timer
 	FTimerHandle FireTimerHandle;
 };

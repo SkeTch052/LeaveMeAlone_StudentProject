@@ -12,7 +12,6 @@ ULMAWeaponComponent::ULMAWeaponComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-//-----HOMEWORK: Shooting in Full Auto Mode
 void ULMAWeaponComponent::Fire()
 {
 	if (Weapon && !AnimReloading && !GetWorld()->GetTimerManager().IsTimerActive(FireTimerHandle))
@@ -34,7 +33,6 @@ void ULMAWeaponComponent::SpawnWeapon()
 	Weapon = GetWorld()->SpawnActor<ALMABaseWeapon>(WeaponClass);
 	if (Weapon)
 	{
-		//-----HOMEWORK: Subscribe to the delegate when the weapon spawns
 		Weapon->OnClipEmpty.AddUObject(this, &ULMAWeaponComponent::OnClipEmpty);
 		const auto Character = Cast<ACharacter>(GetOwner());
 		if (Character)
@@ -71,18 +69,15 @@ void ULMAWeaponComponent::OnNotifyReloadFinished(USkeletalMeshComponent* Skeleta
 	}
 }
 
-//-----HOMEWORK: Can't reload with a full clip
 bool ULMAWeaponComponent::CanReload() const
 {
 	return !AnimReloading && !Weapon->GetIsCurrentClipFull();
 }
 
-//-----HOMEWORK: the new reload function
 void ULMAWeaponComponent::EnhancedReload()
 {
 	if (!CanReload())
 		return;
-	//-----HOMEWORK: Can't reload and shooting at the same time
 	StopFire();
 	Weapon->ChangeClip();
 	AnimReloading = true;
@@ -90,20 +85,27 @@ void ULMAWeaponComponent::EnhancedReload()
 	Character->PlayAnimMontage(ReloadMontage);
 }
 
-//-----HOMEWORK: call the new function in Reload()
 void ULMAWeaponComponent::Reload()
 {
 	EnhancedReload();
 }
 
-//-----HOMEWORK: when releasing the Fire button
 void ULMAWeaponComponent::StopFire()
 {
 	Weapon->StopFire();
 }
 
-//-----HOMEWORK: call the new function in the delegate callback function
 void ULMAWeaponComponent::OnClipEmpty()
 {
 	EnhancedReload();
+}
+
+bool ULMAWeaponComponent::GetCurrentWeaponAmmo(FAmmoWeapon& AmmoWeapon) const
+{
+	if (Weapon)
+	{
+		AmmoWeapon = Weapon->GetCurrentAmmoWeapon();
+		return true;
+	}
+	return false;
 }

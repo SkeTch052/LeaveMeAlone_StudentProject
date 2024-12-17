@@ -4,7 +4,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "TimerManager.h"
 
-DEFINE_LOG_CATEGORY_STATIC(AkLogWeapon, All, All);
+//DEFINE_LOG_CATEGORY_STATIC(AkLogWeapon, All, All);
 
 ALMABaseWeapon::ALMABaseWeapon()
 {
@@ -16,7 +16,6 @@ ALMABaseWeapon::ALMABaseWeapon()
 
 void ALMABaseWeapon::Fire()
 {
-	//-----HOMEWORK: The firing event will now be triggered by a timer
 	GetWorldTimerManager().SetTimer(FireTimerHandle, this, &ALMABaseWeapon::Fire, FireRate, true);
 	Shoot();
 }
@@ -50,13 +49,11 @@ void ALMABaseWeapon::Shoot()
 void ALMABaseWeapon::DecrementBullets()
 {
 	CurrentAmmoWeapon.Bullets--;
-	UE_LOG(AkLogWeapon, Display, TEXT("Bullets = %s"), *FString::FromInt(CurrentAmmoWeapon.Bullets));
+	//UE_LOG(AkLogWeapon, Display, TEXT("Bullets = %s"), *FString::FromInt(CurrentAmmoWeapon.Bullets));
 
 	if (IsCurrentClipEmpty())
 	{
-		//-----HOMEWORK: Can't fire when the current clip is empty
 		StopFire();
-		//-----HOMEWORK: Call Broadcast() in the body of DecrementBullets()
 		OnClipEmpty.Broadcast();
 	}
 }
@@ -66,7 +63,6 @@ bool ALMABaseWeapon::IsCurrentClipEmpty() const
 	return CurrentAmmoWeapon.Bullets == 0;
 }
 
-//-----HOMEWORK: check if the current clip is full
 bool ALMABaseWeapon::IsCurrentClipFull() const
 {
 	return CurrentAmmoWeapon.Bullets == AmmoWeapon.Bullets;
@@ -77,7 +73,6 @@ void ALMABaseWeapon::ChangeClip()
 	CurrentAmmoWeapon.Bullets = AmmoWeapon.Bullets;
 }
 
-//-----HOMEWORK: When release the fire button released, the timer should stop
 void ALMABaseWeapon::StopFire()
 {
 	GetWorldTimerManager().ClearTimer(FireTimerHandle);

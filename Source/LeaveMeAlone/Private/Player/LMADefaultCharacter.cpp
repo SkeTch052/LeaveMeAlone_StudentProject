@@ -89,8 +89,8 @@ void ALMADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ALMADefaultCharacter::StopSprinting);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, WeaponComponent, &ULMAWeaponComponent::Fire);
-	//----HOMEWORK: Improved the Action Mappings - Fire input processing event
 	PlayerInputComponent->BindAction("Fire", IE_Released, WeaponComponent, &ULMAWeaponComponent::StopFire);
+
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, WeaponComponent, &ULMAWeaponComponent::EnhancedReload);
 }
 
@@ -105,7 +105,6 @@ void ALMADefaultCharacter::MoveRight(float Value)
 
 void ALMADefaultCharacter::OnDeath()
 {
-	//-----HOMEWORK: Can't fire when the char is dead
 	WeaponComponent->StopFire();
 
 	CurrentCursor->DestroyRenderState_Concurrent();
@@ -134,7 +133,7 @@ void ALMADefaultCharacter::ZoomCamera(float AxisValue)
 
 void ALMADefaultCharacter::OnHealthChanged(float NewHealth)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Health = %f"), NewHealth));
+	//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Health = %f"), NewHealth));
 }
 
 void ALMADefaultCharacter::RotationPlayerOnCursor()

@@ -18,10 +18,15 @@ public:
 	ULMAWeaponComponent();
 
 	void Fire();
+
+	UFUNCTION(BlueprintCallable)
 	void StopFire();
+
 	void Reload();
 
-	//-----HOMEWORK: declare the new reload function
+	UFUNCTION(BlueprintCallable)
+	bool GetCurrentWeaponAmmo(FAmmoWeapon& AmmoWeapon) const;
+
 	void EnhancedReload();
 
 protected:
@@ -45,9 +50,7 @@ private:
 	void OnNotifyReloadFinished(USkeletalMeshComponent* SkeletalMesh);
 	bool CanReload() const;
 
-	//-----HOMEWORK: The firing event will now be triggered by a timer
 	FTimerHandle FireTimerHandle;
 
-	//-----HOMEWORK: Declare a callback function that responds to a notification
 	void OnClipEmpty();
 };
